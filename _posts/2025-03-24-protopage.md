@@ -45,10 +45,33 @@ The first problem was that I was trying to use 2 i2c channels at the same time. 
 
 The second problem with my setup was that I was using multiple sensors with the same i2c ID. When I bought the sensors, I assumed they would work together because my first prototype worked. I didn't consider that multiple sensors of the same type would have the same i2c ID. I decided not to use an i2c multiplexer, and to stick with 2 sensors that had different i2c ID's.
 
-# Problem 2(filling memory vs. sampling rate):
+# Problem 2(filling RAM vs. sampling rate):
 
-My goal is to record high frequency vibrations with an IMU. 
+My goal is to record high frequency vibrations with an IMU. Human's are capable of detecting very fast frequencies of force. 
+
+To determine the sampling frequency of the DAQ, I need to multiply the largest vibration frequency(Nyquist, in this case) by 2. Typically, roboticist in haptics use 100 Hz as a common vibration frequency. So my goal, should be to measure at 200+Hz. To compare this to experts in the field, I noticed that Cass Labs samples at 400Hz. 
+
+The problem that I ran into is that my configurations of the DAQ and its code are not fast enough to capture the desired vibration frequencies.
+
+It is known, that the biggest ways to slow down a program are to submit data to the console. 
+
+## Method 1 (writing directly to the CSV file
+
+In my first version of the code, I write the IMU data directly to the csv file immediately after the data is recorded. This involves opening up the csv and writing to the file, which is a costly time process.
+
+Sampling rate 17Hz.
+
+## Method 2 (append data to a Python list, and save the data in a CSV once the program was over)
+
+In my second version of the code, I append the IMU data to a list and then wait until the end of the recording session. This was faster, however I kept running into a MemoryError. Without, any delay the program kept crashing. I added a small delay. The fastest that I could sample the data was about 45Hz, without immediately getting a memory error, but after about 10 seconds the program crashed with a MemoryError. Online resources helped me deterine that the RAM was overfilling as the data_list grew larger with data. I tried to implement a garbage collector to clear more cache memory to be used, and I saw minimal improvement, i.e. I gained a little bit more bytes. I am still far from my goal of recording a 2min sampling run.
+
+Fastest sampling rate at 45Hz.
+
+## Further Research
+1. Using a programming language(C, as it is precompiled) that is faster than MicroPython. I found other projects online that use MicroPython at a very fast sampling rate(500Hz)
+2. Upgrading the microcontroller. I have found more projects that use the RPi Pico at 500kHz, but they say this is only possible when you is C and DMA(direct memory access)
 
 # Resources:
 1. i2c explanation: https://learn.adafruit.com/working-with-i2c-devices
 2. i2c library used: https://github.com/Lezgend/MPU6050-MicroPython
+3. Cass Labs: https://casslabs.xyz/pages/research.html
