@@ -1,6 +1,5 @@
 ---
-title: Welcome to my NEW blog
+title: Main page
 ---
 
-Testing this Markdown format
-
+Subtitle of the main landing page
